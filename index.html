@@ -54,8 +54,14 @@ details summary{cursor:pointer;color:var(--teal);font-weight:600;margin-top:6px}
 #imgPop{position:fixed;inset:0;background:rgba(10,20,15,.8);display:grid;place-items:center;z-index:30;padding:16px}
 #imgPop figure{margin:0;max-width:min(92vw,720px);background:#fff;border-radius:14px;padding:10px;text-align:center}
 #popImg{max-width:100%;max-height:68vh;border-radius:8px}#popCap{font:700 1rem "Bricolage Grotesque",sans-serif;margin:8px 0}
-#errPop{position:fixed;inset:0;background:rgba(20,35,28,.55);display:grid;place-items:center;z-index:40;padding:16px}
-.ecard{background:#fff;border-radius:14px;padding:22px;width:min(92vw,420px);max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;text-align:center}.ecard h3{flex:none}.ecard p{color:var(--mute);overflow-wrap:anywhere;overflow-y:auto;flex:1 1 auto;min-height:0;text-align:left;font-size:.9rem;margin:8px 0 16px}.ecard .btn{flex:none;align-self:center}
+#errPop,#nameDlg{position:fixed;inset:0;background:rgba(20,35,28,.55);display:flex;z-index:40;padding:16px;overflow-y:auto;overscroll-behavior:contain}
+#errPop[hidden],#nameDlg[hidden]{display:none}
+.ecard{margin:auto;background:#fff;border-radius:14px;padding:22px;width:min(92vw,420px);text-align:center}
+.ecard p{color:var(--mute);overflow-wrap:anywhere;text-align:left;font-size:.9rem;margin:8px 0 16px}
+.ecard input{margin-top:4px}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav .btn{background:#ffffff22;border-color:#ffffff77;color:#fff}
+.sitem{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}
+.sitem small{display:block;color:var(--mute)}
 .aisle{margin-bottom:14px}.aisle h3{font-size:1rem;color:var(--teal);margin-bottom:4px}
 .item{display:grid;grid-template-columns:24px 1fr 86px auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px}
 .item.done .nm{text-decoration:line-through;color:var(--mute)}
@@ -72,8 +78,8 @@ details summary{cursor:pointer;color:var(--teal);font-weight:600;margin-top:6px}
 </style>
 </head>
 <body>
-<header><h1>Weekly Table</h1><p>Tell us your week. Get recipes, a priced basket in AED and a Carrefour UAE shopping list.</p><button type="button" class="btn" id="install" hidden style="margin-top:12px">Install app</button></header>
-<main>
+<header><h1>Weekly Table</h1><p>Tell us your week. Get recipes, a priced basket in AED and a Carrefour UAE shopping list.</p><nav class="nav"><button type="button" class="btn" data-go="home">🏠 Home</button><button type="button" class="btn" data-go="saved">📚 Saved</button><button type="button" class="btn" data-go="settings">⚙️ Settings</button><button type="button" class="btn" id="install" hidden>Install app</button></nav></header>
+<main id="vHome">
 <fieldset><legend>1. Meals each day</legend><div class="chips" data-k="meals" data-multi="1" data-opts="Breakfast,Lunch,Dinner" data-def="Lunch,Dinner"></div></fieldset>
 <fieldset><legend>2. Days you cook</legend><p class="hint">Other days use leftovers or no-cook meals.</p><div class="chips" data-k="days" data-multi="1" data-opts="Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday" data-def="Monday,Tuesday,Wednesday,Thursday,Sunday"></div></fieldset>
 <fieldset><legend>3. Who’s eating</legend><div class="row"><div><label for="adults">Adults</label><input id="adults" type="number" min="0" value="2"></div><div><label for="kids">Kids</label><input id="kids" type="number" min="0" max="8" value="2"></div></div>
@@ -93,20 +99,37 @@ details summary{cursor:pointer;color:var(--teal);font-weight:600;margin-top:6px}
 <div class="row" style="margin-top:10px"><div><label for="lbKids">Lunchboxes per day</label><input id="lbKids" type="number" min="1" value="2"></div><div><label for="lbBudget">Lunchbox budget (AED)</label><input id="lbBudget" type="number" min="0" value="80"></div></div>
 <div style="margin-top:8px"><input id="lbX" type="text" placeholder="Anything else to avoid? e.g. tuna, strong smells" aria-label="Other lunchbox exclusions"></div>
 <button type="button" class="btn" id="lbGo" style="margin-top:10px">Build lunchboxes only</button></fieldset>
-<fieldset><legend>Gemini</legend>
-<div class="row"><div><label for="key">API key</label><input id="key" type="password" autocomplete="off" placeholder="Stored only in this browser"></div><div><label for="model">Model</label><input id="model" type="text" value="gemini-2.5-flash"></div><div><label for="imgModel">Image model</label><input id="imgModel" type="text" value="gemini-2.5-flash-image"></div></div>
-<p class="hint" style="margin-top:8px">Get a key at aistudio.google.com. It is sent only to Google’s API from this page.</p></fieldset>
 <button class="go" id="go">Build my week</button>
 <div id="status" role="status" aria-live="polite"></div>
 <section id="out" hidden>
+<div class="row" id="actions" style="margin:14px 0 0"><button type="button" class="btn" id="mailBtn">✉️ Email weekly recipe</button><button type="button" class="btn" id="saveBtn">💾 Save recipe &amp; grocery list</button></div>
 <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-t="plan">Recipes</button><button role="tab" aria-selected="false" data-t="lb">Lunchboxes</button><button role="tab" aria-selected="false" data-t="shop">Shopping list</button></div>
 <div id="plan"></div>
 <div id="lb" hidden></div>
 <div id="shop" hidden></div>
 </section>
 </main>
+<main id="vSettings" hidden>
+<h2 style="margin:6px 0 12px">Settings</h2>
+<fieldset><legend>Gemini</legend>
+<div class="row"><div><label for="key">API key</label><input id="key" type="password" autocomplete="off" placeholder="Stored only on this device"></div><div><label for="model">Model</label><input id="model" type="text" value="gemini-2.5-flash"></div><div><label for="imgModel">Image model</label><input id="imgModel" type="text" value="gemini-2.5-flash-image"></div></div>
+<p class="hint" style="margin-top:8px">Get a key at aistudio.google.com. It is sent only to Google’s API from this device.</p></fieldset>
+<fieldset><legend>Email</legend>
+<label for="mail">Send the weekly recipe to</label><input id="mail" type="email" autocomplete="email" placeholder="you@example.com">
+<p class="hint" style="margin:12px 0 6px"><b>EmailJS keys</b> (free account at emailjs.com)</p>
+<div class="row"><div><label for="ejsSvc">Service ID</label><input id="ejsSvc" type="text" placeholder="service_xxxxxxx"></div><div><label for="ejsTpl">Template ID</label><input id="ejsTpl" type="text" placeholder="template_xxxxxxx"></div><div><label for="ejsKey">Public key</label><input id="ejsKey" type="text" placeholder="Account → API keys"></div></div>
+<p class="hint" style="margin-top:8px">Template setup: To email <code>{{to_email}}</code>, Subject <code>{{subject}}</code>, Content <code>&lt;div style="white-space:pre-wrap"&gt;{{message}}&lt;/div&gt;</code></p></fieldset>
+<button class="go" id="setSave" type="button">Save settings</button>
+<div id="setMsg" class="note" role="status" style="margin-top:8px"></div>
+</main>
+<main id="vSaved" hidden><h2 style="margin:6px 0 12px">Previous recipes &amp; grocery lists</h2><div id="savedList"></div></main>
+<main id="vDetail" hidden>
+<div class="row" style="margin-bottom:10px"><button type="button" class="btn" id="detBack">← Back</button><button type="button" class="btn" id="detHome">🏠 Main menu</button><button type="button" class="btn" id="detDel">🗑 Delete</button></div>
+<h2 id="detTitle"></h2><p class="note" id="detDate"></p>
+</main>
 <div id="imgPop" hidden role="dialog" aria-modal="true" aria-label="Dish image"><figure><img id="popImg" alt=""><figcaption id="popCap"></figcaption><button type="button" class="btn" id="popClose">Close</button></figure></div>
 <div id="errPop" hidden role="alertdialog" aria-modal="true" aria-labelledby="errTitle"><div class="ecard"><h3 id="errTitle"></h3><p id="errMsg"></p><button type="button" class="btn" id="errOk">OK</button></div></div>
+<div id="nameDlg" hidden role="dialog" aria-modal="true" aria-labelledby="nameTitle"><div class="ecard"><h3 id="nameTitle">Save recipes &amp; grocery list</h3><label for="saveName" style="margin-top:12px;text-align:left">Name</label><input id="saveName" type="text" maxlength="80"><div class="row" style="margin-top:14px"><button class="btn" id="nameCancel" type="button">Cancel</button><button class="btn" id="nameOk" type="button" style="background:var(--teal);color:#fff">Save</button></div></div></div>
 <div id="busy" hidden role="status" aria-live="polite"><div class="bcard"><div class="bico" id="bico" aria-hidden="true">🍳</div><div id="bmsg"></div><div class="note">This takes 20 to 60 seconds</div></div></div>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -138,6 +161,7 @@ const extra=id=>$(id).value.split(',').map(s=>s.trim()).filter(Boolean);
 $('#key').value=store.get('wt_key')||'';
 $('#model').value=store.get('wt_model')||'gemini-2.5-flash';
 $('#imgModel').value=store.get('wt_imgmodel')||'gemini-2.5-flash-image';
+$('#mail').value=store.get('wt_mail')||'';$('#ejsSvc').value=store.get('wt_ejs_svc')||'';$('#ejsTpl').value=store.get('wt_ejs_tpl')||'';$('#ejsKey').value=store.get('wt_ejs_key')||'';
 
 function setStatus(m,err){const s=$('#status');s.textContent=m;s.className=err?'err':''}
 
@@ -181,7 +205,7 @@ Shape: {"summary":"2 sentences","days":[{"day":"Monday","main":C,"snack":C,"side
 }
 async function gemini(p,temp=0.7){
   const key=$('#key').value.trim(),model=$('#model').value.trim()||'gemini-2.5-flash';
-  if(!key) throw new Error('Add your Gemini API key first.');
+  if(!key) throw new Error('Add your Gemini API key in Settings first.');
   store.set('wt_key',key);store.set('wt_model',model);
   let r;
   try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseMimeType:'application/json',temperature:temp}})})}
@@ -198,14 +222,17 @@ function startBusy(jobs){
 }
 function stopBusy(){bT.forEach(clearInterval);bT=[];$('#busy').hidden=true}
 let S={main:null,lb:null,budget:0};
-const save=()=>store.set('wt_last2',JSON.stringify(S));
+const getSaved=()=>{try{return JSON.parse(localStorage.getItem('wt_saved')||'[]')}catch{return[]}};
+const putSaved=a=>{try{localStorage.setItem('wt_saved',JSON.stringify(a));return true}catch{showErr('Could not save','Browser storage is full. Delete some saved plans and try again.');return false}};
+let viewSaved=null,homeS=null;
+const save=()=>{if(viewSaved){const a=getSaved(),i=a.findIndex(x=>x.id===viewSaved.id);if(i>=0){a[i].data=S;putSaved(a)}}else store.set('wt_last2',JSON.stringify(S))};
 async function run(jobs){
   if(jobs.includes('main')&&(!pick('days').length||!pick('meals').length)) return setStatus('Pick at least one meal and one cooking day.',true);
   if(jobs.includes('lb')&&!pick('lbdays').length) return setStatus('Pick at least one lunchbox day.',true);
   $('#go').disabled=$('#lbGo').disabled=true;startBusy(jobs);
   try{
     for(const j of jobs){setStatus(j==='main'?'Planning your week. This takes 20 to 60 seconds…':'Packing the lunchboxes…');S[j]=await gemini(j==='main'?mainPrompt():lbPrompt(),1);pushHist(j)}
-    S.budget=+$('#budget').value||0;save();render();setStatus('');
+    S.budget=+$('#budget').value||0;S.meta={cuisines:pick('cuisine'),at:Date.now()};save();render();setStatus('');
     $('#out').scrollIntoView({behavior:'smooth'});
   }catch(e){setStatus('Could not build the plan: '+e.message,true)}
   stopBusy();$('#go').disabled=$('#lbGo').disabled=false;
@@ -288,12 +315,12 @@ function drawAges(){
 }
 $('#kids').oninput=()=>{drawAges();const n=+$('#kids').value||0;if(n>0)$('#lbKids').value=n};
 drawAges();
-function showErr(t,m){$('#errTitle').textContent=t;$('#errMsg').textContent=String(m).length>500?String(m).slice(0,500)+'…':m;$('#errPop').hidden=false;$('#errOk').focus()}
+function showErr(t,m){$('#errTitle').textContent=t;$('#errMsg').textContent=String(m).length>300?String(m).slice(0,300)+'…':m;$('#errPop').hidden=false;$('#errOk').focus()}
 $('#errOk').onclick=()=>{$('#errPop').hidden=true};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#errPop').hidden=true});
 async function genImage(prompt){
   const key=$('#key').value.trim(),model=$('#imgModel').value.trim()||'gemini-2.5-flash-image';
-  if(!key) throw new Error('Add your Gemini API key first.');
+  if(!key) throw new Error('Add your Gemini API key in Settings first.');
   store.set('wt_key',key);store.set('wt_imgmodel',model);
   let r;
   try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})})}
@@ -323,6 +350,89 @@ addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('#install')
 addEventListener('appinstalled',()=>{$('#install').hidden=true});
 $('#install').onclick=async()=>{if(dp){dp.prompt();await dp.userChoice;dp=null;$('#install').hidden=true}};
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+// ---------- Navigation ----------
+const fmt=t=>new Date(t).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+function go(v){
+  if(v!=='detail'&&viewSaved){S=homeS||{main:null,lb:null,budget:0};viewSaved=null;$('#vHome').appendChild($('#out'));if(S.main||S.lb)render();else $('#out').hidden=true}
+  ['home','settings','saved','detail'].forEach(x=>$('#v'+x[0].toUpperCase()+x.slice(1)).hidden=x!==v);
+  $('#saveBtn').hidden=v==='detail';
+  if(v==='saved')drawSaved();
+  scrollTo(0,0);
+}
+$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+// ---------- Settings ----------
+$('#setSave').onclick=()=>{
+  store.set('wt_key',$('#key').value.trim());store.set('wt_model',$('#model').value.trim()||'gemini-2.5-flash');store.set('wt_imgmodel',$('#imgModel').value.trim()||'gemini-2.5-flash-image');
+  store.set('wt_mail',$('#mail').value.trim());store.set('wt_ejs_svc',$('#ejsSvc').value.trim());store.set('wt_ejs_tpl',$('#ejsTpl').value.trim());store.set('wt_ejs_key',$('#ejsKey').value.trim());
+  $('#setMsg').textContent='Settings saved on this device.';
+};
+
+// ---------- Save / saved list ----------
+const ADJ=['Sunny','Cosy','Zesty','Golden','Fresh','Hearty','Spicy','Breezy','Rustic','Happy'],SUF=['Table','Feast','Week','Kitchen','Menu'];
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function autoTitle(){
+  const c=S.meta?.cuisines||[],d=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const kind=S.main?(c.length?rnd(c).replace(/ & fresh/i,''):'Family'):'Lunchbox';
+  return `${d} · ${rnd(ADJ)} ${kind} ${rnd(SUF)}`;
+}
+$('#saveBtn').onclick=()=>{$('#saveName').value=autoTitle();$('#nameDlg').hidden=false;$('#saveName').focus();$('#saveName').select()};
+$('#nameCancel').onclick=()=>{$('#nameDlg').hidden=true};
+function doSave(){
+  const title=$('#saveName').value.trim()||autoTitle(),a=getSaved();
+  a.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title,created:Date.now(),data:S});
+  if(!putSaved(a))return;
+  $('#nameDlg').hidden=true;showErr('Saved',`“${title}” is saved. Find it under Saved.`);
+}
+$('#nameOk').onclick=doSave;
+$('#saveName').onkeydown=e=>{if(e.key==='Enter')doSave()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#nameDlg').hidden=true});
+function drawSaved(){
+  const a=getSaved().sort((x,y)=>y.created-x.created);
+  $('#savedList').innerHTML=a.length?a.map(it=>{
+    const D=it.data,t=['main','lb'].reduce((n,k)=>n+(D[k]?D[k].shopping.reduce((q,s)=>q+(+s.est_price_aed||0),0):0),0),
+      items=['main','lb'].reduce((n,k)=>n+(D[k]?D[k].shopping.length:0),0);
+    return `<button type="button" class="sitem" data-open="${esc(it.id)}"><b>${esc(it.title)}</b><small>${esc(fmt(it.created))} · ${items} items · ~${t.toFixed(0)} AED${D.main?'':' · lunchboxes only'}</small></button>`}).join(''):'<p class="note">Nothing saved yet. Build a plan on the home page and press “Save recipe &amp; grocery list”.</p>';
+  $$('#savedList [data-open]').forEach(b=>b.onclick=()=>openSaved(b.dataset.open));
+}
+function openSaved(id){
+  const it=getSaved().find(x=>x.id===id);if(!it)return;
+  homeS=S;S=it.data;viewSaved=it;
+  $('#detTitle').textContent=it.title;$('#detDate').textContent=fmt(it.created);
+  $('#vDetail').appendChild($('#out'));$('#out').hidden=false;
+  render();$('.tabs button[data-t="plan"]').click();
+  go('detail');
+}
+$('#detBack').onclick=()=>go('saved');
+$('#detHome').onclick=()=>go('home');
+$('#detDel').onclick=()=>{if(viewSaved&&confirm('Delete this saved plan?')){putSaved(getSaved().filter(x=>x.id!==viewSaved.id));go('saved')}};
+
+// ---------- Email (EmailJS) ----------
+function emailText(){
+  const L=[],M=S.main,B=S.lb;
+  if(M){L.push('MENU');M.days.forEach(d=>{L.push('',d.day);(d.meals||[]).forEach(m=>L.push(`- ${m.type}: ${m.name}${m.minutes?` (${m.minutes} min)`:''}`))})}
+  if(B){L.push('','LUNCHBOXES');B.days.forEach(d=>L.push(`${d.day}: `+[['main','Main'],['snack','Snack'],['side','Side']].map(([k,t])=>d[k]?`${t} - ${d[k].name}`:'').filter(Boolean).join(' | ')))}
+  ['main','lb'].filter(k=>S[k]).forEach(k=>{
+    L.push('',(k==='lb'?'GROCERY LIST - LUNCHBOXES':'GROCERY LIST - WEEKLY MEALS')+` (~${sum(k).toFixed(0)} AED)`);
+    const by={};S[k].shopping.forEach(s=>(by[s.aisle||'Other']??=[]).push(s));
+    Object.entries(by).forEach(([a,it])=>{L.push('',a+':');it.forEach(s=>L.push(`- ${s.item} (${s.buy}) ~${s.est_price_aed} AED`))});
+  });
+  L.push('',`TOTAL ~${(sum('main')+sum('lb')).toFixed(0)} AED of ${S.budget} AED budget`);
+  return L.join('\n').trim();
+}
+$('#mailBtn').onclick=async()=>{
+  const to=$('#mail').value.trim(),svc=$('#ejsSvc').value.trim(),tpl=$('#ejsTpl').value.trim(),key=$('#ejsKey').value.trim();
+  if(!to||!svc||!tpl||!key) return showErr('Email is not set up yet','Open Settings and add your email address and the three EmailJS keys (Service ID, Template ID, Public key), then save.');
+  const b=$('#mailBtn'),old=b.textContent;b.disabled=true;b.textContent='Sending…';
+  try{
+    const title=viewSaved?viewSaved.title:'Week of '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const r=await fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service_id:svc,template_id:tpl,user_id:key,template_params:{to_email:to,subject:'Weekly Table - '+title,message:emailText()}})});
+    const t=await r.text();if(!r.ok) throw new Error(t||'HTTP '+r.status);
+    showErr('Email sent','The menu and grocery list were sent to '+to+'.');
+  }catch(e){showErr('Email could not be sent',e.message==='Failed to fetch'?'Cannot reach EmailJS. Check your connection.':e.message)}
+  b.disabled=false;b.textContent=old;
+};
 try{const l=store.get('wt_last2');if(l){S=JSON.parse(l);if(S.main||S.lb)render()}}catch{}
 </script>
 </body>
