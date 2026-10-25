@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0F5C54">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Weekly Table – meal plan & Carrefour list</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF3F0;--ink:#14231C;--mute:#5B6B63;--card:#fff;--line:#D3DDD7;--teal:#0F5C54;--saffron:#E8A317;--tomato:#C93B28;--r:10px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0;line-height:1.15}
+h1{font-size:2.2rem;letter-spacing:-.02em}
+header{background:var(--teal);color:#fff;padding:28px 20px 24px}
+header p{margin:6px 0 0;opacity:.85;max-width:60ch}
+main{max-width:900px;margin:0 auto;padding:16px}
+fieldset{border:0;background:var(--card);border-radius:var(--r);padding:14px 16px;margin:0 0 12px;border:1px solid var(--line)}
+legend{font:700 1rem "Bricolage Grotesque",sans-serif;padding:0 6px}
+.hint{color:var(--mute);font-size:.88rem;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;font:inherit;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+select{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:#fff;width:100%}
+input[type=text],input[type=number],input[type=password]{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;width:100%;background:#fff}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1 1 140px}
+label{font-size:.9rem;color:var(--mute);display:block;margin-bottom:3px}
+.go{width:100%;background:var(--saffron);color:var(--ink);border:0;border-radius:var(--r);padding:16px;font:700 1.1rem "Bricolage Grotesque",sans-serif;cursor:pointer}
+.go:disabled{opacity:.6;cursor:wait}
+.btn{border:1.5px solid var(--teal);color:var(--teal);background:#fff;border-radius:8px;padding:8px 14px;font:600 .95rem inherit;font-family:inherit;cursor:pointer}
+#status{margin:12px 0;color:var(--mute)}#status.err{color:var(--tomato);font-weight:600}
+.tabs{display:flex;gap:6px;margin:20px 0 12px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+.tabs button{flex:1;padding:10px;border:0;border-bottom:3px solid transparent;background:none;font:700 1rem "Bricolage Grotesque",sans-serif;color:var(--mute);cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--teal);border-color:var(--teal)}
+.day{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.day>h3{background:var(--ink);color:#fff;padding:8px 14px;font-size:1.05rem}
+.meal{padding:12px 14px;border-top:1px solid var(--line)}.meal:first-of-type{border-top:0}
+.meal h4{margin:0;font:700 1.05rem "Bricolage Grotesque",sans-serif}
+.tag{display:inline-block;background:#E4EFEA;color:var(--teal);border-radius:6px;padding:1px 8px;font-size:.82rem;font-weight:600;margin-right:6px}
+details summary{cursor:pointer;color:var(--teal);font-weight:600;margin-top:6px}
+.meal ul,.meal ol{margin:6px 0;padding-left:20px}
+.mrow{display:flex;gap:12px}.mrow>div:last-child{flex:1;min-width:0}.pic{flex:0 0 56px;height:56px;border-radius:14px;background:#FFF1CC;display:grid;place-items:center;font-size:2rem}
+.vid{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 4px}.vid a{color:var(--teal);font-weight:600;font-size:.88rem}
+#busy{position:fixed;inset:0;background:rgba(20,35,28,.55);display:grid;place-items:center;z-index:20}
+.bcard{background:#fff;border-radius:18px;padding:26px 34px;text-align:center;box-shadow:0 10px 40px #0004;min-width:240px}
+.bico{font-size:3.6rem;line-height:1.2;display:inline-block}#bmsg{font:700 1.1rem "Bricolage Grotesque",sans-serif;margin-top:6px}
+@media(prefers-reduced-motion:no-preference){.bico{animation:bob .55s ease-in-out infinite alternate}}
+@keyframes bob{from{transform:translateY(6px) rotate(-12deg)}to{transform:translateY(-10px) rotate(12deg)}}
+.imgrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 6px}.btn.sm{padding:5px 10px;font-size:.88rem}
+#imgPop{position:fixed;inset:0;background:rgba(10,20,15,.8);display:grid;place-items:center;z-index:30;padding:16px}
+#imgPop figure{margin:0;max-width:min(92vw,720px);background:#fff;border-radius:14px;padding:10px;text-align:center}
+#popImg{max-width:100%;max-height:68vh;border-radius:8px}#popCap{font:700 1rem "Bricolage Grotesque",sans-serif;margin:8px 0}
+#errPop{position:fixed;inset:0;background:rgba(20,35,28,.55);display:grid;place-items:center;z-index:40;padding:16px}
+.ecard{background:#fff;border-radius:14px;padding:22px;max-width:min(92vw,420px);text-align:center}.ecard p{color:var(--mute);overflow-wrap:anywhere;margin:8px 0 16px}
+.aisle{margin-bottom:14px}.aisle h3{font-size:1rem;color:var(--teal);margin-bottom:4px}
+.item{display:grid;grid-template-columns:24px 1fr 86px auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.item.done .nm{text-decoration:line-through;color:var(--mute)}
+.item small{display:block;color:var(--mute)}
+.item a{color:var(--teal);font-weight:600;font-size:.88rem;white-space:nowrap}
+.item input[type=number]{padding:5px 6px;text-align:right}
+.total{background:var(--ink);color:#fff;border-radius:var(--r);padding:16px;margin:16px 0}
+.total .big{font:700 2rem "Bricolage Grotesque",sans-serif}
+.bar{height:10px;background:#ffffff33;border-radius:9px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--saffron)}
+.bar.over i{background:var(--tomato)}
+.note{font-size:.88rem;color:var(--mute)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:no-preference){.day{transition:box-shadow .2s}}
+</style>
+</head>
+<body>
+<header><h1>Weekly Table</h1><p>Tell us your week. Get recipes, a priced basket in AED and a Carrefour UAE shopping list.</p><button type="button" class="btn" id="install" hidden style="margin-top:12px">Install app</button></header>
+<main>
+<fieldset><legend>1. Meals each day</legend><div class="chips" data-k="meals" data-multi="1" data-opts="Breakfast,Lunch,Dinner" data-def="Lunch,Dinner"></div></fieldset>
+<fieldset><legend>2. Days you cook</legend><p class="hint">Other days use leftovers or no-cook meals.</p><div class="chips" data-k="days" data-multi="1" data-opts="Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday" data-def="Monday,Tuesday,Wednesday,Thursday,Sunday"></div></fieldset>
+<fieldset><legend>3. Who’s eating</legend><div class="row"><div><label for="adults">Adults</label><input id="adults" type="number" min="0" value="2"></div><div><label for="kids">Kids</label><input id="kids" type="number" min="0" max="8" value="2"></div></div>
+<div id="ages" class="row" style="margin-top:10px"></div></fieldset>
+<fieldset><legend>4. Kitchen equipment</legend><div class="chips" data-k="gear" data-multi="1" data-opts="Stove,Oven,Air fryer,Microwave,Blender,Slow cooker,Rice cooker" data-def="Stove,Oven,Microwave"></div></fieldset>
+<fieldset><legend>5. What to include</legend><p class="hint">Gemini builds the week from these, in sensible combinations (e.g. ground beef, chicken breast). Leave a group empty to skip it.</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="btn" id="rnd">🎲 Surprise me</button><span class="note" id="rndMsg" role="status"></span></div><p class="hint" style="margin:12px 0 6px"><b>Meat type</b></p><div class="chips" data-k="meat" data-multi="1" data-opts="Beef,Chicken,Lamb,Pork,Cold cuts" data-def="Chicken,Beef"></div><p class="hint" style="margin:12px 0 6px"><b>Cut or kind</b></p><div class="chips" data-k="cut" data-multi="1" data-opts="Ground,Sirloin,Ribeye,Breast,Thigh,Drumsticks,Leg,Cubes for stew,Sausages,Sliced deli" data-def="Ground,Breast"></div><p class="hint" style="margin:12px 0 6px"><b>Fish</b></p><div class="chips" data-k="fish" data-multi="1" data-opts="Salmon,Fish fingers,Tuna (can),White fish fillet,Sea bass,Shrimp,Sardines (can)" data-def="Salmon"></div><p class="hint" style="margin:12px 0 6px"><b>Vegetables</b></p><div class="chips" data-k="veg" data-multi="1" data-opts="Cucumber,Tomato,Spinach,Carrots,Broccoli,Zucchini,Bell pepper,Potatoes,Sweet potato,Cauliflower,Lettuce,Eggplant,Green beans,Peas,Corn,Mushrooms" data-def="Cucumber,Tomato,Spinach,Carrots"></div><p class="hint" style="margin:12px 0 6px"><b>Fruits</b></p><div class="chips" data-k="fruit" data-multi="1" data-opts="Banana,Apple,Pear,Orange,Grapes,Strawberries,Blueberries,Watermelon,Mango,Kiwi,Melon,Dates" data-def="Banana,Apple"></div><div style="margin-top:10px"><input id="itemsX" type="text" placeholder="Anything else to include? e.g. halloumi, lamb mince, lentils" aria-label="Other items to include"></div></fieldset>
+<fieldset><legend>6. Cuisine</legend><p class="hint">Pick the cuisines to mix through the week. Leave empty for free variety.</p>
+<div class="chips" data-k="cuisine" data-multi="1" data-opts="French,Italian,Asian,Mexican,Mediterranean,Middle Eastern,Indian,American,Light & fresh" data-def="Italian,Asian,Mediterranean"></div></fieldset>
+<fieldset><legend>7. Allergies</legend><div class="chips" data-k="allergies" data-multi="1" data-opts="No allergies,Soy,Peanuts,Tree nuts,Seafood,Shrimp,Eggs,Dairy,Gluten,Sesame" data-def="No allergies"></div></fieldset>
+<fieldset><legend>8. Dislikes</legend><div class="chips" data-k="dislikes" data-multi="1" data-opts="Cilantro,Lemon,Garlic,Olives,Pickles,Mushrooms,Onion,Spicy food,Fish,Eggplant"></div><div style="margin-top:8px"><input id="dislikeX" type="text" placeholder="Anything else? e.g. tahini, okra" aria-label="Other dislikes"></div></fieldset>
+<fieldset><legend>9. Already at home</legend><div class="chips" data-k="pantry" data-multi="1" data-opts="Eggs,Milk,Butter,Bread,Onions,Garlic,Bananas,Rice,Pasta,Olive oil,Salt & pepper,Flour,Sugar"></div><div style="margin-top:8px"><input id="pantryX" type="text" placeholder="Anything else? e.g. tomato paste, lentils" aria-label="Other pantry items"></div></fieldset>
+<fieldset><legend>10. Weekly budget</legend><label for="budget">Total budget incl. lunchboxes (AED)</label><input id="budget" type="number" min="0" value="400"></fieldset>
+<fieldset><legend>Kids’ school lunchboxes</legend>
+<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="lbOn" checked> Include lunchboxes in the weekly plan</label>
+<p class="hint">Each box has a main, a snack and a fruit or veg side. Always no pork and no nuts, plus the allergies and dislikes above.</p>
+<div class="chips" data-k="lbdays" data-multi="1" data-opts="Monday,Tuesday,Wednesday,Thursday,Friday" data-def="Monday,Tuesday,Wednesday,Thursday"></div>
+<div class="row" style="margin-top:10px"><div><label for="lbKids">Lunchboxes per day</label><input id="lbKids" type="number" min="1" value="2"></div><div><label for="lbBudget">Lunchbox budget (AED)</label><input id="lbBudget" type="number" min="0" value="80"></div></div>
+<div style="margin-top:8px"><input id="lbX" type="text" placeholder="Anything else to avoid? e.g. tuna, strong smells" aria-label="Other lunchbox exclusions"></div>
+<button type="button" class="btn" id="lbGo" style="margin-top:10px">Build lunchboxes only</button></fieldset>
+<fieldset><legend>Gemini</legend>
+<div class="row"><div><label for="key">API key</label><input id="key" type="password" autocomplete="off" placeholder="Stored only in this browser"></div><div><label for="model">Model</label><input id="model" type="text" value="gemini-2.5-flash"></div><div><label for="imgModel">Image model</label><input id="imgModel" type="text" value="gemini-2.5-flash-image"></div></div>
+<p class="hint" style="margin-top:8px">Get a key at aistudio.google.com. It is sent only to Google’s API from this page.</p></fieldset>
+<button class="go" id="go">Build my week</button>
+<div id="status" role="status" aria-live="polite"></div>
+<section id="out" hidden>
+<div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-t="plan">Recipes</button><button role="tab" aria-selected="false" data-t="lb">Lunchboxes</button><button role="tab" aria-selected="false" data-t="shop">Shopping list</button></div>
+<div id="plan"></div>
+<div id="lb" hidden></div>
+<div id="shop" hidden></div>
+</section>
+</main>
+<div id="imgPop" hidden role="dialog" aria-modal="true" aria-label="Dish image"><figure><img id="popImg" alt=""><figcaption id="popCap"></figcaption><button type="button" class="btn" id="popClose">Close</button></figure></div>
+<div id="errPop" hidden role="alertdialog" aria-modal="true" aria-labelledby="errTitle"><div class="ecard"><h3 id="errTitle"></h3><p id="errMsg"></p><button type="button" class="btn" id="errOk">OK</button></div></div>
+<div id="busy" hidden role="status" aria-live="polite"><div class="bcard"><div class="bico" id="bico" aria-hidden="true">🍳</div><div id="bmsg"></div><div class="note">This takes 20 to 60 seconds</div></div></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+let DATA=null;
+
+// Chips
+$$('.chips').forEach(el=>{
+  const multi=el.dataset.multi==='1', def=(el.dataset.def||'').split(',');
+  el.dataset.opts.split(',').forEach(o=>{
+    const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=o;
+    b.setAttribute('aria-pressed',def.includes(o));
+    b.onclick=()=>{
+      const on=b.getAttribute('aria-pressed')!=='true';
+      if(!multi) el.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',false));
+      b.setAttribute('aria-pressed',multi?on:true);
+      if(el.dataset.k==='allergies'&&multi){ // "No allergies" is exclusive
+        if(o==='No allergies'&&on) el.querySelectorAll('.chip').forEach(c=>{if(c!==b)c.setAttribute('aria-pressed',false)});
+        else if(on) [...el.children].find(c=>c.textContent==='No allergies').setAttribute('aria-pressed',false);
+      }
+    };
+    el.appendChild(b);
+  });
+});
+const pick=k=>$$(`.chips[data-k="${k}"] .chip[aria-pressed=true]`).map(c=>c.textContent);
+const extra=id=>$(id).value.split(',').map(s=>s.trim()).filter(Boolean);
+
+$('#key').value=store.get('wt_key')||'';
+$('#model').value=store.get('wt_model')||'gemini-2.5-flash';
+$('#imgModel').value=store.get('wt_imgmodel')||'gemini-2.5-flash-image';
+
+function setStatus(m,err){const s=$('#status');s.textContent=m;s.className=err?'err':''}
+
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const cyc=a=>{let q=[];return()=>{if(!q.length)q=shuf(a);return q.pop()}};
+const FMB=['omelette or frittata','yogurt bowl or overnight oats','pancakes or crepes','savoury toast','baked or poached eggs in sauce','breakfast wrap','porridge with toppings','smoothie bowl'];
+const FMM=['stir-fry','sheet-pan bake','soup or stew','grill with salad','wrap or tacos','grain bowl','pasta or noodles','curry','casserole or gratin','skewers','rice dish','stuffed vegetables','burger or meatballs','pie or tart','salad meal'];
+const LBM=['wrap or pinwheel','pasta salad','rice or noodle box','mini sandwiches','mini pizzas or flatbreads','frittata or egg muffins','couscous or quinoa salad','quesadilla','meatball or chicken bites with dip','bento-style assembly'];
+const LBS=['homemade nut-free muffin or bites','veggie sticks with dip','crackers with cheese','yogurt with toppings','hummus with pita chips','boiled eggs','popcorn mix','oat cookies (nut-free)'];
+function slots(){
+  const pool=pick('cuisine').length?pick('cuisine'):OPT('cuisine'),c=cyc(pool),f={Breakfast:cyc(FMB),Lunch:cyc(FMM),Dinner:cyc(FMM)},out=[];
+  pick('days').forEach(d=>pick('meals').forEach(m=>out.push({day:d,meal:m,cuisine:c(),format:f[m]()})));return out;
+}
+const lbSlots=()=>{const a=cyc(LBM),b=cyc(LBS);return pick('lbdays').map(d=>({day:d,main_format:a(),snack_format:b()}))};
+const hist=k=>{try{return JSON.parse(store.get('wt_hist_'+k)||'[]')}catch{return[]}};
+const avoid=k=>[...new Set(hist(k).flat())].slice(-60);
+const dishNames=(d,k)=>k==='lb'?d.days.flatMap(x=>['main','snack','side'].map(c=>x[c]?.name)).filter(Boolean):d.days.flatMap(x=>(x.meals||[]).map(m=>m.name)).filter(Boolean);
+const pushHist=k=>{const h=hist(k);h.push(dishNames(S[k],k));store.set('wt_hist_'+k,JSON.stringify(h.slice(-3)))};
+const LB=()=>$('#lbOn').checked;
+const ctx=()=>({allergies:pick('allergies').filter(a=>a!=='No allergies'),dislikes:[...pick('dislikes'),...extra('#dislikeX')],already_at_home:[...pick('pantry'),...extra('#pantryX')]});
+const lbBud=()=>LB()?(+$('#lbBudget').value||0):0;
+const SHOP='"shopping":[{"item":"","aisle":"Produce|Meat & Fish|Dairy & Eggs|Bakery|Pantry|Frozen|Drinks|Other","buy":"","est_price_aed":0,"used_in":"short"}]';
+const RULES='Shopping list: never include already_at_home items; use realistic Carrefour UAE pack sizes (e.g. "1 kg", "6 pcs"); est_price_aed is the price of the whole pack (realistic 2026 AED). Every recipe needs one fitting food "emoji". Return ONLY JSON, no markdown.';
+function mainPrompt(){
+  const o={meals_per_day:pick('meals'),cooking_days:pick('days'),adults:+$('#adults').value||0,kids:+$('#kids').value||0,kid_ages:ages(),equipment:pick('gear'),include:{meat_types:pick('meat'),meat_cuts:pick('cut'),fish:pick('fish'),vegetables:pick('veg'),fruits:pick('fruit'),other:extra('#itemsX')},cuisine_mix:pick('cuisine'),...ctx(),weekly_budget_aed:Math.max(0,(+$('#budget').value||0)-lbBud()),meal_slots:slots(),avoid_repeating_dishes:avoid('main')};
+  if(LB()) o.note='Kids take school lunchboxes on '+pick('lbdays').join(', ')+' (planned separately): no kids lunch needed on those days.';
+  return `You are a meal-planning chef and grocery buyer in the UAE.
+Plan one week (Monday to Sunday) for this household:
+${JSON.stringify(o,null,1)}
+Rules: include every selected meal type each day; on non-cooking days use leftovers or no-cook meals (say so in the name); respect allergies strictly, avoid dislikes, build meals mainly from the "include" lists (use only those meats, fish, vegetables and fruits, in sensible combinations, not necessarily all of them; skip any group left empty) and add basic staples as needed (rice, pasta, bread, eggs, dairy, legumes, oils, herbs, spices); use only listed equipment; spread the cuisine_mix across the week for variety ("Light & fresh" means light, fresh, salad-forward dishes); follow meal_slots (each cooked meal's cuisine and dish format, adapting creatively to the include lists); never repeat or closely resemble any dish in avoid_repeating_dishes; no two meals may share the same main protein and cooking method; name real, specific dishes, not generic ones like "grilled chicken with rice"; reuse ingredients; scale portions for adults plus each kid by age (about 1/4 adult at ages 1-3, 1/2 at 4-8, 3/4 at 9-12, full adult from 13) and keep foods age-appropriate (cut small, avoid choking hazards for under 5s); aim at or under budget, otherwise say so in summary.
+${RULES}
+Shape: {"summary":"2 sentences","days":[{"day":"Monday","meals":[{"type":"Lunch","name":"","emoji":"🍝","minutes":20,"equipment":["Stove"],"ingredients":[{"item":"","qty":""}],"steps":[""]}]}],${SHOP},"tips":[""]}`;
+}
+function lbPrompt(){
+  const o={days:pick('lbdays'),lunchboxes_per_day:+$('#lbKids').value||1,kid_ages:ages(),...ctx(),extra_exclusions:extra('#lbX'),preferred_fruits:pick('fruit'),preferred_vegetables:pick('veg'),budget_aed:+$('#lbBudget').value||0,lunchbox_slots:lbSlots(),avoid_repeating_dishes:avoid('lb')};
+  return `You are a UAE-based family nutritionist. Plan healthy, easy school lunchboxes for kids:
+${JSON.stringify(o,null,1)}
+Each day's box has one main, one snack and one fruit or veg side. STRICT: no pork (no bacon, ham, pork gelatin) and no nuts, peanuts, nut spreads or products that may contain nuts. Also respect allergies and dislikes. Follow lunchbox_slots (the main and snack format for each day), never repeat or closely resemble any dish in avoid_repeating_dishes, and name specific, creative dishes. Max 15 minutes prep per component, kid-friendly, fine at room temperature for 4 hours, easy to prep ahead, reuse ingredients across days, and prefer the preferred fruits and vegetables. Quantities cover all lunchboxes for the day. Use kid_ages to size portions and keep foods age-appropriate (cut small, avoid choking hazards for under 5s). Aim at or under budget.
+${RULES}
+Shape: {"summary":"2 sentences","days":[{"day":"Monday","main":C,"snack":C,"side":C,"prep_ahead":"short tip or empty"}],${SHOP},"tips":[""]} where C={"name":"","emoji":"🥪","minutes":10,"ingredients":[{"item":"","qty":""}],"steps":[""]}`;
+}
+async function gemini(p,temp=0.7){
+  const key=$('#key').value.trim(),model=$('#model').value.trim()||'gemini-2.5-flash';
+  if(!key) throw new Error('Add your Gemini API key first.');
+  store.set('wt_key',key);store.set('wt_model',model);
+  let r;
+  try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseMimeType:'application/json',temperature:temp}})})}
+  catch{throw new Error('Cannot reach Google. Open this page in a normal browser tab (not an in-app preview) and check your network.')}
+  const j=await r.json();if(!r.ok) throw new Error(j.error?.message||'HTTP '+r.status);
+  const t=(j.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('').replace(/```json|```/g,'').trim();
+  const d=JSON.parse(t);d.shopping=(d.shopping||[]).map(s=>({...s,est_price_aed:+s.est_price_aed||0,done:false}));return d;
+}
+let bT=[];
+function startBusy(jobs){
+  const I=['🍳','🥕','🛒','🍝','🥗','🔪','🍋','🥖'],M=jobs.length===1&&jobs[0]==='lb'?['Packing the lunchboxes…','Choosing nut-free snacks…','Pricing the basket…']:['Choosing recipes…','Balancing portions by age…','Pricing the basket…','Writing your shopping list…'];
+  let i=0,k=0;$('#bico').textContent=I[0];$('#bmsg').textContent=M[0];$('#busy').hidden=false;
+  bT=[setInterval(()=>{$('#bico').textContent=I[++i%I.length]},700),setInterval(()=>{$('#bmsg').textContent=M[++k%M.length]},3500)];
+}
+function stopBusy(){bT.forEach(clearInterval);bT=[];$('#busy').hidden=true}
+let S={main:null,lb:null,budget:0};
+const save=()=>store.set('wt_last2',JSON.stringify(S));
+async function run(jobs){
+  if(jobs.includes('main')&&(!pick('days').length||!pick('meals').length)) return setStatus('Pick at least one meal and one cooking day.',true);
+  if(jobs.includes('lb')&&!pick('lbdays').length) return setStatus('Pick at least one lunchbox day.',true);
+  $('#go').disabled=$('#lbGo').disabled=true;startBusy(jobs);
+  try{
+    for(const j of jobs){setStatus(j==='main'?'Planning your week. This takes 20 to 60 seconds…':'Packing the lunchboxes…');S[j]=await gemini(j==='main'?mainPrompt():lbPrompt(),1);pushHist(j)}
+    S.budget=+$('#budget').value||0;save();render();setStatus('');
+    $('#out').scrollIntoView({behavior:'smooth'});
+  }catch(e){setStatus('Could not build the plan: '+e.message,true)}
+  stopBusy();$('#go').disabled=$('#lbGo').disabled=false;
+}
+$('#go').onclick=()=>run(LB()?['main','lb']:['main']);
+$('#lbGo').onclick=()=>run(['lb']);
+
+const link=i=>'https://www.carrefouruae.com/mafuae/en/search?keyword='+encodeURIComponent(i);
+const sum=k=>S[k]?S[k].shopping.reduce((a,s)=>a+s.est_price_aed,0):0;
+const tips=x=>(x.tips||[]).length?`<h3>Tips</h3><ul>${x.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:'';
+const IMG={};
+const imgBtns=n=>IMG[n]?`<button type="button" class="btn sm" data-act="view">🖼️ View image</button><button type="button" class="btn sm" data-act="gen">Regenerate</button>`:`<button type="button" class="btn sm" data-act="gen">🎨 Generate image</button>`;
+const vids=n=>{const q=encodeURIComponent(n+' recipe'),a=(h,t)=>`<a href="${h}" target="_blank" rel="noopener">${t}</a>`;
+  return a('https://www.youtube.com/results?search_query='+q,'▶ YouTube')+a('https://www.google.com/search?tbm=vid&q='+encodeURIComponent(n+' recipe site:instagram.com'),'Instagram')+a('https://www.google.com/search?tbm=vid&q='+q,'More videos')};
+const card=(m,t)=>`<div class="meal"><div class="mrow"><div class="pic" aria-hidden="true">${esc(m.emoji||'🍽️')}</div><div>
+  <span class="tag">${esc(t)}</span>${m.minutes?`<span class="tag">${esc(m.minutes)} min</span>`:''}${(m.equipment||[]).length?`<span class="tag">${esc(m.equipment.join(', '))}</span>`:''}
+  <h4>${esc(m.name)}</h4><div class="vid">${vids(m.name)}</div><div class="imgrow" data-n="${esc(m.name)}">${imgBtns(m.name)}</div><details><summary>Ingredients and steps</summary>
+  <ul>${(m.ingredients||[]).map(i=>`<li>${esc(i.qty)} ${esc(i.item)}</li>`).join('')}</ul>
+  <ol>${(m.steps||[]).map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details></div></div></div>`;
+function render(){
+  $('#out').hidden=false;const M=S.main,L=S.lb;
+  $('#plan').innerHTML=M?`<p>${esc(M.summary)}</p>`+M.days.map(d=>`<div class="day"><h3>${esc(d.day)}</h3>`+(d.meals||[]).map(m=>card(m,m.type)).join('')+'</div>').join('')+tips(M):'<p class="note">No weekly plan yet. Press “Build my week”.</p>';
+  $('#lb').innerHTML=L?`<p>${esc(L.summary)}</p>`+L.days.map(d=>`<div class="day"><h3>${esc(d.day)}</h3>`+[['main','Main'],['snack','Snack'],['side','Fruit or veg']].map(([k,t])=>d[k]?card(d[k],t):'').join('')+(d.prep_ahead?`<div class="meal note">Prep ahead: ${esc(d.prep_ahead)}</div>`:'')+'</div>').join('')+tips(L):'<p class="note">No lunchboxes yet. Tick “Include lunchboxes” or press “Build lunchboxes only”.</p>';
+  renderShop();
+}
+function section(k,title){
+  const L=S[k];if(!L||!L.shopping.length) return '';
+  const by={};L.shopping.forEach((s,i)=>(by[s.aisle||'Other']??=[]).push([s,i]));
+  return `<h2 style="margin:18px 0 8px;font-size:1.3rem">${title} <span class="tag" id="sub-${k}"></span></h2>`+Object.entries(by).map(([a,it])=>`<div class="aisle"><h3>${esc(a)}</h3>`+it.map(([s,i])=>`
+    <div class="item ${s.done?'done':''}"><input type="checkbox" data-k="${k}" data-i="${i}" ${s.done?'checked':''} aria-label="Got ${esc(s.item)}">
+    <div class="nm">${esc(s.item)} <small>${esc(s.buy)}${s.used_in?' · '+esc(s.used_in):''}</small></div>
+    <input type="number" min="0" step="0.5" value="${s.est_price_aed}" data-k="${k}" data-p="${i}" aria-label="Price of ${esc(s.item)} in AED">
+    <a href="${link(s.item)}" target="_blank" rel="noopener">Carrefour</a></div>`).join('')+'</div>').join('');
+}
+function renderShop(){
+  $('#shop').innerHTML=`<div class="total" id="tot"></div>
+  <div class="row" style="margin-bottom:12px"><button class="btn" id="copy">Copy list</button><button class="btn" id="openall">Open all in Carrefour</button></div>
+  <p class="note">Prices are Gemini estimates in AED. Edit any price and the total updates. Links open a Carrefour UAE search for that item.</p>`+section('main','Weekly meals')+section('lb','Lunchboxes');
+  updTotal();
+  $$('#shop [data-p]').forEach(e=>e.oninput=()=>{S[e.dataset.k].shopping[e.dataset.p].est_price_aed=+e.value||0;updTotal();save()});
+  $$('#shop [data-i]').forEach(e=>e.onchange=()=>{S[e.dataset.k].shopping[e.dataset.i].done=e.checked;e.closest('.item').classList.toggle('done',e.checked);save()});
+  const ks=['main','lb'].filter(k=>S[k]);
+  $('#copy').onclick=async()=>{
+    const t=ks.map(k=>(k==='lb'?'LUNCHBOXES':'WEEKLY MEALS')+'\n'+S[k].shopping.map(s=>`- ${s.item} (${s.buy}) ~${s.est_price_aed} AED`).join('\n')).join('\n\n')+`\n\nTotal ~${(sum('main')+sum('lb')).toFixed(0)} AED`;
+    try{await navigator.clipboard.writeText(t);$('#copy').textContent='Copied'}catch{prompt('Copy your list:',t)}
+  };
+  $('#openall').onclick=()=>{const all=ks.flatMap(k=>S[k].shopping);if(confirm(`Open ${all.length} Carrefour tabs? Your browser may block some pop-ups.`))all.forEach(s=>window.open(link(s.item),'_blank','noopener'))};
+}
+function updTotal(){
+  const a=sum('main'),b=sum('lb'),t=a+b,B=S.budget,left=B-t,pct=B?Math.min(100,t/B*100):0;
+  $('#tot').innerHTML=`<div class="big">${t.toFixed(0)} AED</div><div>of ${B} AED budget · ${left>=0?left.toFixed(0)+' AED left':'<b>'+(-left).toFixed(0)+' AED over</b>'}</div><div class="bar ${left<0?'over':''}"><i style="width:${pct}%"></i></div><div style="opacity:.8;font-size:.9rem">Weekly meals ${a.toFixed(0)} AED · Lunchboxes ${b.toFixed(0)} AED</div>`;
+  ['main','lb'].forEach(k=>{const e=$('#sub-'+k);if(e)e.textContent=sum(k).toFixed(0)+' AED'});
+}
+$$('.tabs button').forEach(b=>b.onclick=()=>{
+  $$('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['plan','lb','shop'].forEach(t=>$('#'+t).hidden=t!==b.dataset.t);
+});
+const OPT=k=>$$(`.chips[data-k="${k}"] .chip`).map(c=>c.textContent);
+const setPicks=(k,a)=>$$(`.chips[data-k="${k}"] .chip`).forEach(c=>c.setAttribute('aria-pressed',a.includes(c.textContent)));
+$('#rnd').onclick=async()=>{
+  const b=$('#rnd'),m=$('#rndMsg'),G=['meat','cut','fish','veg','fruit'],opts=Object.fromEntries(G.map(k=>[k,OPT(k)])),c=ctx();
+  b.disabled=true;m.textContent='Picking a fresh set…';
+  try{
+    const d=await gemini(`You are a family cook in the UAE. Pick a varied, balanced set of everyday ingredients for one week of normal family meals. Choose ONLY from these exact options:
+${JSON.stringify(opts)}
+Rules: 1 or 2 meat types plus 2 to 4 cuts that suit them (e.g. ground, breast, sirloin); 1 or 2 fish; 5 to 7 vegetables that mix well; 3 to 4 fruits; never pick Pork; avoid anything matching these allergies or dislikes: ${JSON.stringify([...c.allergies,...c.dislikes])}. Make it different each time (seed ${Math.random()}). Return ONLY JSON: {"meat":[],"cut":[],"fish":[],"veg":[],"fruit":[]}`,1);
+    const r=Object.fromEntries(G.map(k=>[k,(Array.isArray(d[k])?d[k]:[]).filter(x=>opts[k].includes(x))]));
+    if(!G.some(k=>r[k].length)) throw new Error('No usable picks came back. Try again.');
+    G.forEach(k=>setPicks(k,r[k]));m.textContent='Done. Adjust anything you like.';
+  }catch(e){m.textContent=e.message}
+  b.disabled=false;
+};
+const ages=()=>$$('#ages select').map(x=>+x.value);
+function drawAges(){
+  const n=Math.min(8,Math.max(0,+$('#kids').value||0));let saved=[];
+  try{saved=JSON.parse(store.get('wt_ages')||'[]')}catch{}
+  const cur=ages(),keep=cur.length?cur:saved;
+  $('#ages').innerHTML=Array.from({length:n},(_,i)=>`<div><label for="age${i}">Kid ${i+1} age</label><select id="age${i}">${Array.from({length:17},(_,a)=>a+1).map(a=>`<option value="${a}"${a===(keep[i]||8)?' selected':''}>${a} ${a===1?'year':'years'}</option>`).join('')}</select></div>`).join('');
+  $$('#ages select').forEach(x=>x.onchange=()=>store.set('wt_ages',JSON.stringify(ages())));
+}
+$('#kids').oninput=()=>{drawAges();const n=+$('#kids').value||0;if(n>0)$('#lbKids').value=n};
+drawAges();
+function showErr(t,m){$('#errTitle').textContent=t;$('#errMsg').textContent=m;$('#errPop').hidden=false;$('#errOk').focus()}
+$('#errOk').onclick=()=>{$('#errPop').hidden=true};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#errPop').hidden=true});
+async function genImage(prompt){
+  const key=$('#key').value.trim(),model=$('#imgModel').value.trim()||'gemini-2.5-flash-image';
+  if(!key) throw new Error('Add your Gemini API key first.');
+  store.set('wt_key',key);store.set('wt_imgmodel',model);
+  let r;
+  try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})})}
+  catch{throw new Error('Cannot reach Google. Check your network.')}
+  const j=await r.json();if(!r.ok) throw new Error(j.error?.message||'HTTP '+r.status);
+  for(const p of j.candidates?.[0]?.content?.parts||[]){const d=p.inlineData||p.inline_data;if(d?.data) return `data:${d.mimeType||d.mime_type||'image/png'};base64,${d.data}`}
+  throw new Error('No image came back. Check that your key can use the image model.');
+}
+const findRecipe=n=>{for(const k of ['main','lb'])for(const d of S[k]?.days||[]){for(const m of d.meals||[])if(m.name===n)return m;for(const c of ['main','snack','side'])if(d[c]?.name===n)return d[c]}return null};
+const pop=$('#imgPop');
+function closePop(){pop.hidden=true}
+$('#popClose').onclick=closePop;pop.onclick=e=>{if(e.target===pop)closePop()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('.imgrow [data-act]');if(!b) return;
+  const row=b.closest('.imgrow'),n=row.dataset.n;
+  if(b.dataset.act==='view'){$('#popImg').src=IMG[n];$('#popImg').alt=n;$('#popCap').textContent=n;pop.hidden=false;$('#popClose').focus();return}
+  b.disabled=true;b.textContent='Generating…';
+  try{
+    const m=findRecipe(n),ing=(m?.ingredients||[]).slice(0,7).map(i=>i.item).join(', ');
+    IMG[n]=await genImage(`Appetizing, realistic overhead food photograph of the finished dish "${n}"${ing?`, made with ${ing}`:''}. Nicely plated on a table, natural light, no text, no people, no hands.`);
+    $$('.imgrow').forEach(r=>{if(r.dataset.n===n)r.innerHTML=imgBtns(n)});
+  }catch(err){row.innerHTML=imgBtns(n);showErr('Image could not be generated',err.message)}
+});
+let dp=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('#install').hidden=false});
+addEventListener('appinstalled',()=>{$('#install').hidden=true});
+$('#install').onclick=async()=>{if(dp){dp.prompt();await dp.userChoice;dp=null;$('#install').hidden=true}};
+if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{const l=store.get('wt_last2');if(l){S=JSON.parse(l);if(S.main||S.lb)render()}}catch{}
+</script>
+</body>
+</html>
