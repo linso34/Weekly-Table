@@ -55,7 +55,7 @@ details summary{cursor:pointer;color:var(--teal);font-weight:600;margin-top:6px}
 #imgPop figure{margin:0;max-width:min(92vw,720px);background:#fff;border-radius:14px;padding:10px;text-align:center}
 #popImg{max-width:100%;max-height:68vh;border-radius:8px}#popCap{font:700 1rem "Bricolage Grotesque",sans-serif;margin:8px 0}
 #errPop{position:fixed;inset:0;background:rgba(20,35,28,.55);display:grid;place-items:center;z-index:40;padding:16px}
-.ecard{background:#fff;border-radius:14px;padding:22px;max-width:min(92vw,420px);text-align:center}.ecard p{color:var(--mute);overflow-wrap:anywhere;margin:8px 0 16px}
+.ecard{background:#fff;border-radius:14px;padding:22px;width:min(92vw,420px);max-height:85vh;max-height:85dvh;display:flex;flex-direction:column;text-align:center}.ecard h3{flex:none}.ecard p{color:var(--mute);overflow-wrap:anywhere;overflow-y:auto;flex:1 1 auto;min-height:0;text-align:left;font-size:.9rem;margin:8px 0 16px}.ecard .btn{flex:none;align-self:center}
 .aisle{margin-bottom:14px}.aisle h3{font-size:1rem;color:var(--teal);margin-bottom:4px}
 .item{display:grid;grid-template-columns:24px 1fr 86px auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px}
 .item.done .nm{text-decoration:line-through;color:var(--mute)}
@@ -288,7 +288,7 @@ function drawAges(){
 }
 $('#kids').oninput=()=>{drawAges();const n=+$('#kids').value||0;if(n>0)$('#lbKids').value=n};
 drawAges();
-function showErr(t,m){$('#errTitle').textContent=t;$('#errMsg').textContent=m;$('#errPop').hidden=false;$('#errOk').focus()}
+function showErr(t,m){$('#errTitle').textContent=t;$('#errMsg').textContent=String(m).length>500?String(m).slice(0,500)+'…':m;$('#errPop').hidden=false;$('#errOk').focus()}
 $('#errOk').onclick=()=>{$('#errPop').hidden=true};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#errPop').hidden=true});
 async function genImage(prompt){
